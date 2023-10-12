@@ -1,16 +1,17 @@
 import { DataSource } from 'typeorm';
 import { Item } from '../item/item.entity';
+import { Person } from '../person/person.entity';
 
 export const dataSource = new DataSource({
 	type: 'postgres',
-	host: 'localhost',
-	port: 5432,
-	username: 'postgres',
-	password: 'postgres',
-	database: 'tagself',
+	host: process.env.DB_HOST,
+	port: Number(process.env.DB_PORT),
+	username: process.env.DB_USERNAME,
+	password: process.env.DB_PASSWORD,
+	database: process.env.DB_NAME,
 	synchronize: true,
-	logging: true,
-	entities: [Item],
+	logging: ['error', 'warn'],
+	entities: [Item, Person],
 	subscribers: [],
 	migrations: [],
 });

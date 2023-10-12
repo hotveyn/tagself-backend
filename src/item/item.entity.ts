@@ -1,13 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'items' })
-export class Item {
+export class Item extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
 	@Column()
 	name: string;
 
-	@Column('text')
+	@Column({ type: 'text', nullable: true })
 	description: string;
 }

@@ -1,26 +1,37 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import { IServerLogger } from './logger/server-logger/server-logger.interface';
 import { RuntimeEnum } from './enums/runtime.enum';
-import { ItemRoutes } from './item/item.routes';
+import { MagmaRouter } from './router';
+import { ConsolaInstance } from 'consola';
+import { BaseModule } from './base/module.base';
 
 export class App {
-	server: FastifyInstance;
-
-	constructor(mode: RuntimeEnum, logger: IServerLogger) {
-		this.server = Fastify({ logger: logger[mode] });
+	public readonly server: FastifyInstance;
+	private modules: BaseModule[] = [];
+	constructor(
+		mode: RuntimeEnum,
+		serverLogger: IServerLogger,
+		private readonly logger: ConsolaInstance,
+	) {
+		this.server = Fastify({ logger: serverLogger[mode] });
 	}
 
 	public async start(): Promise<void> {
-		this.server.register(ItemRoutes.makeRoutes);
-		await this.server.listen();
+		this.logger.start('Server is starting...');
+		await this.listen();
+		this.logger.success('Server started successfully');
+		this.logger.box('Available modules:' + ' ' + this.modules.join(' '));
 	}
 
-	async listen(port: number = Number(process.env.PORT) || 5000): Promise<void> {
+	public async listen(port: number = Number(process.env.PORT) || 5000): Promise<void> {
 		await this.server.listen({ port }).catch((e) => {
-			console.log(e);
+			this.logger.error(e);
 			process.exit(1);
 		});
 	}
 
-	// async addRoutes(routes: any[]): Promise<void> {}
+	public connectModule<T extends BaseModule>(Module: new (fastify: FastifyInstance) => T): void {
+		const module = new Module(this.server);
+		this.modules.push(module.constructor.name);
+	}
 }
